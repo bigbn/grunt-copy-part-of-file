@@ -87,13 +87,7 @@ var getSourceScripts = function (content, startPattern, endPattern) {
  */
 var insertScriptsIntoDestinationFile = function(destinationContent, scriptsStr, startPattern, endPattern) {
 
-    if (!destinationContent ) {
-        var message = 'You must provide a destination file, destination start pattern, and destination end pattern.';
-        grunt.log.error(message);
-        throw new TypeError(message);
-    }
-
-    if (startPattern && endPattern) {
+    if (destinationContent && startPattern && endPattern) {
         var start = getRegex(startPattern);
         var end = getRegex(endPattern);
         var matcher = getRegex(start.source + '[^]*' + end.source);
@@ -102,7 +96,7 @@ var insertScriptsIntoDestinationFile = function(destinationContent, scriptsStr, 
         var replacer = startPattern + '\n' + scriptsStr + '\n' + endPattern;
         var replaced = destinationContent.replace(matcher, replacer);
         //console.log("Replaced: ", replaced);
-        return replaced; 
+        return replaced;
     } else {
         return scriptsStr;
     }
@@ -110,13 +104,13 @@ var insertScriptsIntoDestinationFile = function(destinationContent, scriptsStr, 
 
 /**
  * This function removes the destination file patterns that were generated before from the file.
- * 
+ *
  * @param  destinationFilePath        [The file path of the file.]
  * @param destinationFileStartPattern [The file start pattern]
  * @param destinationFileEndPattern   [The file end pattern]
  */
 var removeDestinationFilePatterns = function(destinationFilePath, destinationFileStartPattern, destinationFileEndPattern){
-  
+
     var fileContent = grunt.file.read(destinationFilePath);
     // break the fileContent into an array of lines.
     var lines = fileContent.split('\n');
@@ -140,7 +134,7 @@ var removeDestinationFilePatterns = function(destinationFilePath, destinationFil
 
 /**
  * This function adds destination file patterns to act as a marker when the update is done.
- * 
+ *
  * @param destinationFilePath         [The file path of the destination file.]
  * @param destinationFileStartPattern [The destination file start pattern.]
  * @param destinationFileEndPattern   [The destination file end pattern.]
@@ -179,7 +173,7 @@ var addDestinationFilePatterns = function(destinationFilePath, destinationFileSt
 
   //If the translations for the specified locale already exist in its respective file
   var newFileContent = fileContent + "\n" + destinationFileStartPattern+ destinationFileEndPattern;
-  
+
   if(content) {
     newFileContent = preMatchedContent +"\n"+ destinationFileStartPattern+ "\n" + content + "\n"+ destinationFileEndPattern + "\n" + postMatchedContent;
   }
@@ -189,7 +183,7 @@ var addDestinationFilePatterns = function(destinationFilePath, destinationFileSt
 
 /**
  * This function takes care to copy different parts of the source file representing to the corresponding destination files.
- * 
+ *
  * @param  filepath   [The file path of the destination file.]
  * @param  sourceFile [The file path of the source file.]
  * @param  file       [The file]
@@ -206,12 +200,14 @@ var copyTranslationsToDestinationFile = function(filepath, sourceFile, file, opt
   var e2eFilePath = filepath;
   var indexFilePath = sourceFile.toString();
 
+
   if (!grunt.file.exists(indexFilePath)) {
       grunt.log.warn('Source file ' + indexFilePath + ' not found.');
   }
 
   if (!grunt.file.exists(e2eFilePath)) {
       grunt.log.warn('E2E file ' + e2eFilePath + ' not found.');
+      grunt.file.write(e2eFilePath, '');
   }
 
   if(locationDestinationStartPattern && locationDestinationEndPattern) {
@@ -242,7 +238,7 @@ var copyTranslationsToDestinationFile = function(filepath, sourceFile, file, opt
     // Remove the destinationFileStartPattern and destinationFileEndPattern tags.
     removeDestinationFilePatterns(filepath, destinationFileStartPattern, destinationFileEndPattern);
   }
-  
+
   // Print a success message.
   grunt.log.writeln('File "' + e2eFilePath + '" created.');
 };
@@ -254,22 +250,12 @@ module.exports = function(grunt) {
    */
   grunt.registerMultiTask('copy-part-of-file', 'This plugin helps us copy sections from 1 file and insert it into other files.', function() {
 
-    this.files.forEach(function(file) { 
+    this.files.forEach(function(file) {
       var sourceFile = file.src;
-      var destinationFiles = grunt.file.expand(this.options(), file.dest);
+      grunt.log.error(file.dest)
 
-      var dest = destinationFiles.filter(function(filepath) {  
-        // Warn on and remove invalid source files.
-        if (!grunt.file.exists(filepath)) {
-          grunt.log.warn('Destination file ' + filepath + ' not found.');
-          return false;
-        } else {
-          return true;
-        }
-      }, this).map(function(filepath) {
-          copyTranslationsToDestinationFile(filepath, sourceFile, file, this.options());
+      copyTranslationsToDestinationFile(file.dest, sourceFile, file, this.options());
 
-      }, this);
     }, this);
   });
 };
