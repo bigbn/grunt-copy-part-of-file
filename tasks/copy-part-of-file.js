@@ -252,7 +252,6 @@ module.exports = function(grunt) {
 
     this.files.forEach(function(file) {
       var sourceFile = file.src;
-      grunt.log.error(file.dest)
 
       copyTranslationsToDestinationFile(file.dest, sourceFile, file, this.options());
 
