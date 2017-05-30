@@ -87,21 +87,25 @@ var getSourceScripts = function (content, startPattern, endPattern) {
  */
 var insertScriptsIntoDestinationFile = function(destinationContent, scriptsStr, startPattern, endPattern) {
 
-    if (!destinationContent || !startPattern || !endPattern) {
+    if (!destinationContent ) {
         var message = 'You must provide a destination file, destination start pattern, and destination end pattern.';
         grunt.log.error(message);
         throw new TypeError(message);
     }
 
-    var start = getRegex(startPattern);
-    var end = getRegex(endPattern);
-    var matcher = getRegex(start.source + '[^]*' + end.source);
-    //console.log("Matcher: " + matcher);
-    //console.log("TEST: ", matcher.test(destinationContent));
-    var replacer = startPattern + '\n' + scriptsStr + '\n' + endPattern;
-    var replaced = destinationContent.replace(matcher, replacer);
-    //console.log("Replaced: ", replaced);
-    return replaced;
+    if (startPattern && endPattern) {
+        var start = getRegex(startPattern);
+        var end = getRegex(endPattern);
+        var matcher = getRegex(start.source + '[^]*' + end.source);
+        //console.log("Matcher: " + matcher);
+        //console.log("TEST: ", matcher.test(destinationContent));
+        var replacer = startPattern + '\n' + scriptsStr + '\n' + endPattern;
+        var replaced = destinationContent.replace(matcher, replacer);
+        //console.log("Replaced: ", replaced);
+        return replaced; 
+    } else {
+        return scriptsStr;
+    }
 };
 
 /**
